@@ -1,0 +1,8 @@
+include ':xhs'
+include ':tools'
+include ':kuaishou'
+include ':idlefish'
+include ':tiktok'
+include ':wechat'
+include ':app'
+rootProject.name = "android-libs"
