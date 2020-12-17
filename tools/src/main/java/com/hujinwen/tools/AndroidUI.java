@@ -3,10 +3,14 @@ package com.hujinwen.tools;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
+import android.app.Instrumentation;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.SystemClock;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -147,4 +151,60 @@ public class AndroidUI {
         return objectNode;
     }
 
+    public static <T extends View> T findViewByText(View decorView, String text) {
+        return findViewByText(decorView, text, false, false);
+    }
+
+    public static <T extends View> T findViewByText(View decorView, String text, boolean mustBeTextEqueal, boolean mustBeVisible) {
+        if (mustBeVisible && decorView.getVisibility() != View.VISIBLE) {
+            return null;
+        }
+        if (decorView instanceof TextView && !(decorView instanceof EditText)) {
+            TextView textView = ((TextView) decorView);
+            String textViewText = textView.getText().toString().trim();
+            if (mustBeTextEqueal && textViewText.equals(text)) {
+                return (T) textView;
+            } else if (textViewText.contains(text)) {
+                return (T) textView;
+            }
+        } else if (decorView instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) decorView;
+            int childCount = viewGroup.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                View childView = viewGroup.getChildAt(i);
+                TextView textView = findViewByText(childView, text);
+                if (textView != null) {
+                    return (T) textView;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 滑动
+     *
+     * @param x
+     * @param y
+     * @param stepLength
+     */
+    public static void hover(final float x, final float y, final int stepLength) {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                Instrumentation iso = new Instrumentation();
+                iso.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, x, y, 0));
+                iso.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_MOVE, x, y, 0));
+                iso.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 20, MotionEvent.ACTION_MOVE, x, y - 30 * stepLength, 0));
+                iso.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 40, MotionEvent.ACTION_MOVE, x, y - 60 * stepLength, 0));
+                iso.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 60, MotionEvent.ACTION_MOVE, x, y - 90 * stepLength, 0));
+                iso.sendPointerSync(MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis() + 60, MotionEvent.ACTION_UP, x, y - 90 * stepLength, 0));
+            }
+        };
+        if (Thread.currentThread().getId() <= 2) {
+            new Thread(runnable).start();
+        } else {
+            runnable.run();
+        }
+    }
 }
