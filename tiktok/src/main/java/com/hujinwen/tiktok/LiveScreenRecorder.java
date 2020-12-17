@@ -4,11 +4,10 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 
+import com.hujinwen.tools.AndroidUI;
 import com.ss.android.ugc.aweme.live.LivePlayActivity;
 import com.ss.android.ugc.aweme.main.MainActivity;
 
-import gz.radar.Android;
-import gz.radar.AndroidUI;
 
 /**
  * Created by hu-jinwen on 2020/10/9
@@ -21,7 +20,7 @@ public class LiveScreenRecorder {
      * 根据房间id，打开指定房间
      */
     public static void openLive(String roomId) throws Exception {
-        LivePlayActivity.a(Android.getTopActivity(), Long.parseLong(roomId), new Bundle());
+        LivePlayActivity.a(AndroidUI.getTopActivity(), Long.parseLong(roomId), new Bundle());
     }
 
     /**
@@ -39,7 +38,7 @@ public class LiveScreenRecorder {
      */
     public static void backToHomeActivity() throws Exception {
         Activity currentActivity;
-        while (!((currentActivity = Android.getTopActivity()) instanceof MainActivity)) {
+        while (!((currentActivity = AndroidUI.getTopActivity()) instanceof MainActivity)) {
             currentActivity.finish();
             Thread.sleep(1000);
         }

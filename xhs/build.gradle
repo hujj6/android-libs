@@ -32,12 +32,15 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    task makeJar(type: Copy, dependsOn: build) {
-        delete 'build/libs/spider.jar'
-        from('build/intermediates/aar_main_jar/release/')
-        into('build/libs/')
-        include('classes.jar')
-        rename('classes.jar', 'spider.jar')
+    task makeJar(type: Jar, dependsOn: build) {
+        baseName("spider")
+        from(project.zipTree("build/intermediates/aar_main_jar/release/classes.jar"))
+        from(project.zipTree("libs/tools.jar"))
+//        from(project(path: ":tools"))
+//        into("build/libs")
+//        include("com/hujinwen/**/*.class")
+        include("**/*.class")
+//        include("org/nanohttpd/**/*.class")
     }
 
     task makeDex(type: Exec, dependsOn: makeJar) {

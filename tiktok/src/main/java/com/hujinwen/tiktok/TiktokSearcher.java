@@ -8,10 +8,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.ies.dmt.ui.widget.DmtTextView;
 import com.bytedance.router.SmartRouter;
+import com.hujinwen.tools.AndroidUI;
 import com.ss.android.ugc.aweme.profile.ui.UserProfileActivity;
 
-import gz.radar.Android;
-import gz.radar.AndroidUI;
 
 /**
  * 抖音hook爬虫
@@ -21,7 +20,7 @@ import gz.radar.AndroidUI;
 public class TiktokSearcher {
 
     public static void searchUserFeed(final String secUserId) throws Exception {
-        SmartRouter.buildRoute(Android.getTopActivity(), "aweme://user/profile?sec_uid=" + secUserId).open();
+        SmartRouter.buildRoute(AndroidUI.getTopActivity(), "aweme://user/profile?sec_uid=" + secUserId).open();
         slide();
     }
 
@@ -29,12 +28,12 @@ public class TiktokSearcher {
         StringBuilder sb = new StringBuilder();
         sb.append("\nkeyword -> " + keyword + "\n");
 
-        SmartRouter.buildRoute(Android.getTopActivity(), "//search?keyword=" + keyword + "&display_keyword=" + keyword + "&enter_from=anywheredoor").open();
+        SmartRouter.buildRoute(AndroidUI.getTopActivity(), "//search?keyword=" + keyword + "&display_keyword=" + keyword + "&enter_from=anywheredoor").open();
 
 
         try {
             Thread.sleep(3000);
-            Activity activity = Android.getTopActivity();
+            Activity activity = AndroidUI.getTopActivity();
             View viewById = activity.findViewById(2131174479);
             sb.append("\nviewById -> " + viewById + "\n");
 
@@ -59,16 +58,16 @@ public class TiktokSearcher {
         } catch (Exception e) {
             throw new RuntimeException(sb.toString());
         }
-        Android.getTopActivity().finish();
+        AndroidUI.getTopActivity().finish();
     }
 
     private static void slide() throws Exception {
         Thread.sleep(5000);
-        Activity activity = Android.getTopActivity();
+        Activity activity = AndroidUI.getTopActivity();
         AndroidUI.hover(300, 400, 100);
         Thread.sleep(1000);
         if (activity instanceof UserProfileActivity) {
-            activity = Android.getTopActivity();
+            activity = AndroidUI.getTopActivity();
             final RecyclerView bb2 = activity.findViewById(2131168164);
 
             for (int i = 0; i < 500; i++) {
