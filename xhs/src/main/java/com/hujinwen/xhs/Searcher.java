@@ -9,9 +9,9 @@ import android.view.View;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.gson.Gson;
 import com.hujinwen.tools.AndroidUI;
 import com.hujinwen.tools.DebuggerTool;
+import com.hujinwen.utils.JsonUtils;
 import com.xingin.shield.http.XhsHttpInterceptor;
 import com.xingin.xhs.index.v2.IndexActivityV2;
 
@@ -41,8 +41,6 @@ public class Searcher {
         OK_HTTP_CLIENT = clientBuilder.build();
     }
 
-
-    private static final Gson GSON = new Gson();
 
     /**
      * 搜索全部
@@ -179,7 +177,7 @@ public class Searcher {
         } catch (Exception ignored) {
         }
         if (response != null) {
-            return GSON.toJson(response.request().headers());
+            return JsonUtils.toString(response.request().headers());
         }
 
         return "{}";
