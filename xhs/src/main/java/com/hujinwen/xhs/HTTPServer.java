@@ -21,6 +21,9 @@ public class HTTPServer extends NanoServer {
     }
 
 
+    /**
+     * 生成shield
+     */
     @Router("/genShield")
     public Response genShield(IHTTPSession session) {
         Map<String, List<String>> postData = parsePostData(session);
@@ -29,7 +32,7 @@ public class HTTPServer extends NanoServer {
         }
         final List<String> urlList = postData.get("url");
         final List<String> paramList = postData.get("xy_common_params");
-        if (urlList.isEmpty() || paramList.isEmpty()) {
+        if (urlList == null || paramList == null || urlList.isEmpty() || paramList.isEmpty()) {
             return Response.newFixedLengthResponse("Miss params!");
         }
         String url = urlList.get(0);
@@ -39,6 +42,14 @@ public class HTTPServer extends NanoServer {
         } catch (IOException ignored) {
         }
         return Response.newFixedLengthResponse("{}");
+    }
+
+    /**
+     * 健康检查
+     */
+    @Router("/status")
+    public Response healthCheck(IHTTPSession session) {
+        return Response.newFixedLengthResponse("OK");
     }
 
     public static void startServer() throws IOException {

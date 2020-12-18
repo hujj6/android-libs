@@ -26,6 +26,7 @@ import okhttp3.Response;
  * Created by hu-jinwen on 12/1/20
  * <p>
  * 小红书搜索
+ * app 版本：v.6.70.0.a4851e2
  */
 @SuppressLint("ResourceType")
 public class Searcher {
