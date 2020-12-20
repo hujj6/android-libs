@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bytedance.ies.dmt.ui.widget.DmtTextView;

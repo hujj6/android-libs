@@ -2,6 +2,11 @@ plugins {
     id 'com.android.library'
 }
 
+repositories {
+    google()
+    jcenter()
+}
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.1"
@@ -26,6 +31,18 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    task makeJar(type: Jar, dependsOn: build) {
+        baseName("spider")
+        from(project.zipTree("build/intermediates/aar_main_jar/release/classes.jar"))
+        from(project.zipTree("libs/tools.jar"))
+        include("**/*.class")
+    }
+
+    task makeDex(type: Exec, dependsOn: makeJar) {
+        commandLine "dx", "--dex", "--output", "build/libs/spider.dex", "build/libs/spider.jar"
+    }
+
 }
 
 dependencies {
