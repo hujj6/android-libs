@@ -32,16 +32,22 @@ public class HTTPServer extends NanoServer {
         }
         final List<String> urlList = postData.get("url");
         final List<String> paramList = postData.get("xy_common_params");
+        final List<String> postBodyList = postData.get("postBody");
+
+        // 参数完整性过滤
         if (urlList == null || paramList == null || urlList.isEmpty() || paramList.isEmpty()) {
             return Response.newFixedLengthResponse("Miss params!");
         }
-        String url = urlList.get(0);
-        String xy_common_params = paramList.get(0);
-        try {
-            return Response.newFixedLengthResponse(Searcher.genShield(url, xy_common_params));
-        } catch (IOException ignored) {
+
+        final String url = urlList.get(0);
+        final String xy_common_params = paramList.get(0);
+
+        if (postBodyList != null && !postBodyList.isEmpty()) {
+            // post加密
+            final String postBodyStr = paramList.get(0);
+            return Response.newFixedLengthResponse(Searcher.genShieldPost(url, xy_common_params, postBodyStr));
         }
-        return Response.newFixedLengthResponse("{}");
+        return Response.newFixedLengthResponse(Searcher.genShieldGet(url, xy_common_params));
     }
 
     /**

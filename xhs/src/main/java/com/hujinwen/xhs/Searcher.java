@@ -12,12 +12,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 import com.hujinwen.tools.AndroidUI;
 import com.hujinwen.tools.DebuggerTool;
+import com.hujinwen.utils.UrlUtils;
 import com.xingin.shield.http.XhsHttpInterceptor;
 import com.xingin.xhs.index.v2.IndexActivityV2;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import l.f0.e1.a.a;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -164,13 +168,19 @@ public class Searcher {
     }
 
     /**
-     * 生成小红书请求所需的 shield 等请求头信息
+     * 构造小红书 get 请求所需的 shield
      */
-    public static String genShield(String url, String xy_common_params) throws IOException {
+    public static String genShieldGet(String url, String xyCommonParams) {
+        if (response != null) {
+            try {
+                response.close();
+            } catch (Exception ignored) {
+            }
+        }
         response = null;
 
         Request.Builder requestBuilder = new Request.Builder();
-        requestBuilder.addHeader("xy-common-params", xy_common_params);
+        requestBuilder.addHeader("xy-common-params", xyCommonParams);
         requestBuilder.addHeader("User-Agent", "Dalvik/2.1.0 (Linux; U; Android 9; Pixel 2 Build/PQ2A.190405.003) Resolution/1080*1920 Version/6.70.0 Build/6700132 Device/(Google;Pixel 2) discover/6.70.0 NetType/WiFi");
 
         Request request = requestBuilder.url(url).get().build();
@@ -182,9 +192,65 @@ public class Searcher {
 //            return JsonUtils.toString(response.request().headers());
             return GSON.toJson(response.request().headers());
         }
-
         return "{}";
     }
+
+    /**
+     * 构造小红书 post 请求所需的 shield
+     *
+     * @param postBodyStr post请求体，urlEncode 后的字符串
+     */
+    public static String genShieldPost(String url, String xyCommonParams, String postBodyStr) {
+        if (response != null) {
+            try {
+                response.close();
+            } catch (Exception ignored) {
+            }
+        }
+        response = null;
+
+        Request.Builder reqBuilder = new Request.Builder();
+        reqBuilder.addHeader("xy-common-params", xyCommonParams);
+        reqBuilder.addHeader("User-Agent", "Dalvik/2.1.0 (Linux; U; Android 9; Pixel 2 Build/PQ2A.190405.003) Resolution/1080*1920 Version/6.70.0 Build/6700132 Device/(Google;Pixel 2) discover/6.70.0 NetType/WiFi");
+
+        FormBody.Builder formBodyBuilder = new FormBody.Builder();
+        for (Map.Entry<String, String> entry : parsePostBody(postBodyStr).entrySet()) {
+            formBodyBuilder.add(entry.getKey(), entry.getValue());
+        }
+
+        reqBuilder.url(url);
+        reqBuilder.post(formBodyBuilder.build());
+
+        Request request = reqBuilder.build();
+        try {
+            OK_HTTP_CLIENT.newCall(request).execute();
+        } catch (Exception ignored) {
+        }
+        if (response != null) {
+//            return JsonUtils.toString(response.request().headers());
+            return GSON.toJson(response.request().headers());
+        }
+        return "{}";
+    }
+
+    /**
+     * 从 postBodyStr 中解析 postBody 参数
+     *
+     * @param postBodyStr post请求体，urlEncode 后的字符串
+     */
+    private static Map<String, String> parsePostBody(String postBodyStr) {
+        Map<String, String> postBody = new HashMap<>();
+        for (String argItem : postBodyStr.split("&")) {
+            String[] keyValues = argItem.split("=");
+            if (keyValues.length == 2) {
+                String key = UrlUtils.encodeUtf8(keyValues[0]);
+                String value = UrlUtils.encodeUtf8(keyValues[1]);
+                postBody.put(key, value);
+            }
+        }
+        return postBody;
+    }
+
 
     static class ShieldInterceptor extends XhsHttpInterceptor {
 
