@@ -6,3 +6,4 @@ include ':tiktok'
 include ':wechat'
 include ':app'
 rootProject.name = "android-libs"
+include ':frida-tools'
