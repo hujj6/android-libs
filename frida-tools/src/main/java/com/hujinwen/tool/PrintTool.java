@@ -15,11 +15,11 @@ public class PrintTool {
      */
     public static String printMethods(Class<?> clazz) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Class: ");
+        sb.append("\nClass: ");
         sb.append(clazz.toString());
         sb.append("\n");
 
-        Method[] methods = ReflectUtils.getDeclaredMethods(clazz);
+        Method[] methods = ReflectUtils.getMethods(clazz);
         for (Method method : methods) {
             sb.append(method.toString());
             sb.append("\n");
@@ -33,11 +33,11 @@ public class PrintTool {
      */
     public static String printFields(Object obj) throws IllegalAccessException {
         StringBuilder sb = new StringBuilder();
-        sb.append("Object: ");
+        sb.append("\nObject: ");
         sb.append(obj.toString());
         sb.append("\n");
 
-        Field[] fields = ReflectUtils.getDeclaredFields(obj.getClass());
+        Field[] fields = ReflectUtils.getFields(obj.getClass());
         for (Field field : fields) {
             sb.append(field.toString());
             sb.append(" => ");

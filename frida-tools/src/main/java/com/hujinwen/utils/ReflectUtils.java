@@ -1,12 +1,11 @@
 package com.hujinwen.utils;
 
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -15,39 +14,80 @@ import java.util.concurrent.ConcurrentHashMap;
  * 反射工具类
  */
 public class ReflectUtils {
+    private static final Method NULL_METHOD;
 
-    private static final Method[] NO_METHODS = {};
-
-    private static final Field[] NO_FIELDS = {};
-
-    private static final Map<Class<?>, Field[]> declaredFieldsCache =
+    private static final Map<Class<?>, Field[]> FIELDS_CACHE =
             new ConcurrentHashMap<>(256);
 
-    private static final Map<Class<?>, Method[]> declaredMethodsCache =
+    private static final Map<Class<?>, Field[]> DECLARED_FIELDS_CACHE =
             new ConcurrentHashMap<>(256);
+
+
+    private static final Map<Class<?>, Method[]> METHODS_CACHE =
+            new ConcurrentHashMap<>(256);
+
+    private static final Map<Class<?>, Method[]> DECLARED_METHODS_CACHE =
+            new ConcurrentHashMap<>(256);
+
+    private static final Map<String, Method> SINGLE_METHOD_CACHE =
+            new ConcurrentHashMap<>(256);
+
+    static {
+        try {
+            NULL_METHOD = ReflectUtils.class.getDeclaredMethod("nullMethod");
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void nullMethod() {
+    }
 
     /**
      * 获取所有该类中定义的field
      */
     public static Field[] getDeclaredFields(Class<?> clazz) {
-        Field[] result = declaredFieldsCache.get(clazz);
-        if (result == null) {
-            result = clazz.getDeclaredFields();
-            declaredFieldsCache.put(clazz, (result.length == 0 ? NO_FIELDS : result));
-        }
-        return result;
+        return DECLARED_FIELDS_CACHE.computeIfAbsent(clazz, k -> clazz.getDeclaredFields());
+    }
+
+    /**
+     * 获取该类所有的字段
+     */
+    public static Field[] getFields(Class<?> clazz) {
+        return FIELDS_CACHE.computeIfAbsent(clazz, k -> clazz.getFields());
     }
 
     /**
      * 获取所有该类中定义的method
      */
     public static Method[] getDeclaredMethods(Class<?> clazz) {
-        Method[] result = declaredMethodsCache.get(clazz);
-        if (result == null) {
-            result = ArrayUtils.union(clazz.getDeclaredMethods(), findConcreteMethodsOnInterfaces(clazz));
-            declaredMethodsCache.put(clazz, (result.length == 0 ? NO_METHODS : result));
+        return DECLARED_METHODS_CACHE.computeIfAbsent(clazz, k -> clazz.getDeclaredMethods());
+    }
+
+    /**
+     * 获取该类所有方法
+     */
+    public static Method[] getMethods(Class<?> clazz) {
+        return METHODS_CACHE.computeIfAbsent(clazz, k -> clazz.getMethods());
+    }
+
+    /**
+     * 获取方法
+     */
+    public static Method getMethod(Class<?> clazz, String name, Class<?>... parameterTypes) {
+        String methodMapKey = clazz.getName() + name;
+        Method method = SINGLE_METHOD_CACHE.get(methodMapKey);
+        if (method == null) {
+            try {
+                method = clazz.getMethod(name, parameterTypes);
+                SINGLE_METHOD_CACHE.put(methodMapKey, method);
+            } catch (NoSuchMethodException e) {
+                SINGLE_METHOD_CACHE.put(methodMapKey, NULL_METHOD);
+            }
+        } else if (method == NULL_METHOD) {
+            method = null;
         }
-        return result;
+        return method;
     }
 
     /**
@@ -98,22 +138,6 @@ public class ReflectUtils {
         return "public".equals(Modifier.toString(method.getModifiers()));
     }
 
-    /**
-     * 获取接口中定义的方法
-     */
-    private static Method[] findConcreteMethodsOnInterfaces(Class<?> clazz) {
-        Set<Method> result = new HashSet<>();
-        for (Class<?> ifc : clazz.getInterfaces()) {
-            for (Method ifcMethod : ifc.getMethods()) {
-                if (!Modifier.isAbstract(ifcMethod.getModifiers())) {
-                    result.add(ifcMethod);
-                }
-            }
-        }
-        final Method[] methods = new Method[result.size()];
-        result.toArray(methods);
-        return methods;
-    }
 
     /**
      * 预测set方法名称
