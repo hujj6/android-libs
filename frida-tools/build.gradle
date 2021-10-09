@@ -33,7 +33,7 @@ android {
     }
 
     task makeDex(type: Exec, dependsOn: makeJar) {
-        commandLine "dx", "--dex", "--output", "build/libs/frida-tools.dex", "build/libs/frida-tools.jar"
+        commandLine "dx", "--dex", "--min-sdk-version=26", "--output", "build/libs/frida-tools.dex", "build/libs/frida-tools.jar"
     }
 }
 

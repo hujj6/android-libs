@@ -1,6 +1,9 @@
 package com.hujinwen.utils;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by hu-jinwen on 2020/4/9
@@ -173,5 +176,59 @@ public class ArrayUtils {
         }
         return result;
     }
+
+    public static <T> List<T> asList(T... ts) {
+        return Arrays.asList(ts);
+    }
+
+    public static List<Character> asList(char... chars) {
+        final List<Character> list = new ArrayList<>(chars.length);
+        for (char c : chars) {
+            list.add(c);
+        }
+        return list;
+    }
+
+
+    public static List<Byte> asList(byte... bytes) {
+        final List<Byte> list = new ArrayList<>(bytes.length);
+        for (byte b : bytes) {
+            list.add(b);
+        }
+        return list;
+    }
+
+    public static List<Short> asList(short... shorts) {
+        final List<Short> list = new ArrayList<>(shorts.length);
+        for (short s : shorts) {
+            list.add(s);
+        }
+        return list;
+    }
+
+    public static List<Integer> asList(int... is) {
+        final List<Integer> list = new ArrayList<>(is.length);
+        for (int i : is) {
+            list.add(i);
+        }
+        return list;
+    }
+
+    public static List<Long> asList(long... longs) {
+        final List<Long> list = new ArrayList<>(longs.length);
+        for (long l : longs) {
+            list.add(l);
+        }
+        return list;
+    }
+
+    public static List<Boolean> asList(boolean... booleans) {
+        final List<Boolean> list = new ArrayList<>(booleans.length);
+        for (boolean b : booleans) {
+            list.add(b);
+        }
+        return list;
+    }
+
 
 }

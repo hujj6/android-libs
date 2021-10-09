@@ -1,10 +1,11 @@
 package com.hujinwen.utils;
 
-import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,21 +17,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ReflectUtils {
     private static final Method NULL_METHOD;
 
-    private static final Map<Class<?>, Field[]> FIELDS_CACHE =
-            new ConcurrentHashMap<>(256);
 
     private static final Map<Class<?>, Field[]> DECLARED_FIELDS_CACHE =
             new ConcurrentHashMap<>(256);
 
-
-    private static final Map<Class<?>, Method[]> METHODS_CACHE =
+    private static final Map<Class<?>, Field[]> FIELDS_CACHE =
             new ConcurrentHashMap<>(256);
+
 
     private static final Map<Class<?>, Method[]> DECLARED_METHODS_CACHE =
             new ConcurrentHashMap<>(256);
 
+    private static final Map<Class<?>, Method[]> METHODS_CACHE =
+            new ConcurrentHashMap<>(256);
+
     private static final Map<String, Method> SINGLE_METHOD_CACHE =
             new ConcurrentHashMap<>(256);
+
 
     static {
         try {
@@ -51,11 +54,47 @@ public class ReflectUtils {
     }
 
     /**
-     * 获取该类所有的字段
+     * 获取该类及其继承的所有的属性（包括私有属性）
      */
     public static Field[] getFields(Class<?> clazz) {
-        return FIELDS_CACHE.computeIfAbsent(clazz, k -> clazz.getFields());
+        if (!FIELDS_CACHE.containsKey(clazz)) {
+            final List<Field> fieldList = extractFields(clazz);
+            Field[] fields = new Field[fieldList.size()];
+            FIELDS_CACHE.put(clazz, fieldList.toArray(fields));
+        }
+        return FIELDS_CACHE.get(clazz);
     }
+
+    private static List<Field> extractFields(Class<?> clazz) {
+        final List<Field> records = new ArrayList<>(ArrayUtils.asList(clazz.getDeclaredFields()));
+        if (!clazz.isInterface() && clazz != Object.class) {
+            records.addAll(extractFields(clazz.getSuperclass()));
+            for (Class<?> iClazz : clazz.getInterfaces()) {
+                records.addAll(extractFields(iClazz));
+            }
+        }
+        return records;
+    }
+
+    /**
+     * 获取对象属性值
+     */
+    private static Object getFieldValue(Object obj, String fieldName) throws NoSuchFieldException, IllegalAccessException {
+        return getFieldValue(obj.getClass(), obj, fieldName);
+    }
+
+    /**
+     * 获取对象属性值
+     * * 主动传入 Class，可解决获取父类属性的问题
+     */
+    private static Object getFieldValue(Class<?> clazz, Object obj, String fieldName) throws NoSuchFieldException, IllegalAccessException {
+        final Field field = clazz.getDeclaredField(fieldName);
+        if (!field.isAccessible()) {
+            field.setAccessible(true);
+        }
+        return field.get(obj);
+    }
+
 
     /**
      * 获取所有该类中定义的method
@@ -64,18 +103,40 @@ public class ReflectUtils {
         return DECLARED_METHODS_CACHE.computeIfAbsent(clazz, k -> clazz.getDeclaredMethods());
     }
 
+
     /**
-     * 获取该类所有方法
+     * 获取该类以及其继承的所有方法（包括私有方法）
      */
     public static Method[] getMethods(Class<?> clazz) {
-        return METHODS_CACHE.computeIfAbsent(clazz, k -> clazz.getMethods());
+        if (!METHODS_CACHE.containsKey(clazz)) {
+            final List<Method> methodList = extractMethods(clazz);
+            final Method[] methods = new Method[methodList.size()];
+            METHODS_CACHE.put(clazz, methodList.toArray(methods));
+        }
+        return METHODS_CACHE.get(clazz);
     }
+
+
+    public static List<Method> extractMethods(Class<?> clazz) {
+        final List<Method> records = new ArrayList<>();
+
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (!Modifier.isAbstract(method.getModifiers())) {
+                records.add(method);
+            }
+        }
+        if (!clazz.isInterface() && clazz != Object.class) {
+            records.addAll(extractMethods(clazz.getSuperclass()));
+        }
+        return records;
+    }
+
 
     /**
      * 获取方法
      */
     public static Method getMethod(Class<?> clazz, String name, Class<?>... parameterTypes) {
-        String methodMapKey = clazz.getName() + name;
+        String methodMapKey = clazz.getName() + "." + name;
         Method method = SINGLE_METHOD_CACHE.get(methodMapKey);
         if (method == null) {
             try {
@@ -186,11 +247,7 @@ public class ReflectUtils {
     }
 
     public static Object forceInvoke(Object obj, String methodName) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        final Method method = obj.getClass().getDeclaredMethod(methodName);
-        if (!method.isAccessible()) {
-            method.setAccessible(true);
-        }
-        return method.invoke(obj);
+        return forceInvoke(obj, methodName, null, null);
     }
 
     /**
@@ -202,7 +259,15 @@ public class ReflectUtils {
      * @param params      方法执行传入的参数
      */
     public static Object forceInvoke(Object obj, String methodName, Class<?>[] paramsClazz, Object[] params) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-        final Method method = obj.getClass().getDeclaredMethod(methodName, paramsClazz);
+        return forceInvoke(obj.getClass(), obj, methodName, paramsClazz, params);
+    }
+
+    public static Object forceInvoke(Class<?> clazz, Object obj, String methodName, Class<?>[] paramsClazz, Object[] params) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        final Method method = clazz.getDeclaredMethod(methodName, paramsClazz);
+        return forceInvoke(obj, method, params);
+    }
+
+    public static Object forceInvoke(Object obj, Method method, Object... params) throws InvocationTargetException, IllegalAccessException {
         if (!method.isAccessible()) {
             method.setAccessible(true);
         }
