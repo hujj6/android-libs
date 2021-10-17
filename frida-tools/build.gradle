@@ -29,6 +29,10 @@ android {
     task makeJar(type: Jar, dependsOn: build) {
         baseName("frida-tools")
         from(project.zipTree("build/intermediates/aar_main_jar/release/classes.jar"))
+        from(project.zipTree("libs/jackson-annotations-2.12.0.jar"))
+        from(project.zipTree("libs/jackson-core-2.12.0.jar"))
+        from(project.zipTree("libs/jackson-databind-2.12.0.jar"))
+        from(project.zipTree("libs/nanohttpd-2.3.2-SNAPSHOT.jar"))
         include("**/*.class")
     }
 
