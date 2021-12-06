@@ -230,5 +230,9 @@ public class ArrayUtils {
         return list;
     }
 
+    public static Object[] newObjArray(Object... objects) {
+        return objects;
+    }
+
 
 }

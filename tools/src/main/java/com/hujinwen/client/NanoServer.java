@@ -7,6 +7,7 @@ import com.hujinwen.utils.ReflectUtils;
 import org.nanohttpd.protocols.http.IHTTPSession;
 import org.nanohttpd.protocols.http.NanoHTTPD;
 import org.nanohttpd.protocols.http.response.Response;
+import org.nanohttpd.protocols.http.response.Status;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -46,7 +47,7 @@ public class NanoServer extends NanoHTTPD {
                 throw new RouterHandleException(e);
             }
         }
-        return Response.newFixedLengthResponse("Hello World!");
+        return Response.newFixedLengthResponse(Status.NOT_FOUND, "text/html", "Not Found uri => " + uri);
     }
 
 
